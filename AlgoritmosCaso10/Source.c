@@ -12,8 +12,6 @@ typedef struct matroid{
     char ** arrStr;
     char ** solStr;
     char * fun;
-    int size;
-    int type;
 } matroid;
 
 
@@ -44,28 +42,29 @@ void initStrMatroid(matroid mtr){
     mtr.arrStr[8] = "oro";
     mtr.arrStr[9] = "hoja";
 }
-void printMatroid(matroid mtr){
-    if(mtr.type == 0){
+void printMatroid(matroid mtr, char type){
+    if(type == 'd'){
         printf("S: [");
-        for(int i = 0; i < mtr.size-1; i++){
+        for(int i = 0; i < MATROID_NUM_ARR_SIZE-1; i++){
             printf("%d, ",mtr.arrNum[i]);
         }
-        printf("%d]\n",mtr.arrNum[mtr.size-1]);
+        printf("%d]\n",mtr.arrNum[MATROID_NUM_ARR_SIZE-1]);
         printf("Function: %s\n",mtr.fun);
     }
     else{
-        if(mtr.type == 1){
+        if(type == 's'){
             printf("S: [");
-            for(int i = 0; i < mtr.size-1; i++){
+            for(int i = 0; i < STRING_SIZE_MAX-1; i++){
                 printf("%s, ",mtr.arrStr[i]);
             }
-            printf("%s]\n",mtr.arrStr[mtr.size-1]);
+            printf("%s]\n",mtr.arrStr[STRING_SIZE_MAX-1]);
             printf("Function: %s\n",mtr.fun);
         }
     }
 }
-void printMatroidSolutions(matroid mtr){
-    if(mtr.type == 0){
+void printMatroidSolutions(matroid mtr, char type){
+    solCount = getSolCount(mtr);
+    if(type == 'd'){
         printf("%d soluciones: [",solCount);
         for(int i = 0; i < solCount-1; i++){
             printf("%d, ",mtr.solNum[i]);
@@ -73,7 +72,7 @@ void printMatroidSolutions(matroid mtr){
         printf("%d]\n\n",mtr.solNum[solCount-1]);
     }
     else{
-        if(mtr.type == 1){
+        if(type == 's'){
             printf("%d soluciones: [",solCount);
             for(int i = 0; i < solCount-1; i++){
                 printf("%s, ",mtr.solStr[i]);
@@ -99,7 +98,7 @@ int isPalindrome(char * cadena){
 int getSolCount(matroid M){
     solCount = 0;
     if(M.fun == "even"){
-        for(int i = 0; i < M.size; i++){
+        for(int i = 0; i < MATROID_NUM_ARR_SIZE; i++){
             if(isEven(M.arrNum[i])){
                 solCount++;
             }
@@ -107,7 +106,7 @@ int getSolCount(matroid M){
         return solCount;
     }
     if(M.fun == "odd"){
-        for(int i = 0; i < M.size; i++){
+        for(int i = 0; i < MATROID_NUM_ARR_SIZE; i++){
             if(!isEven(M.arrNum[i])){
                 solCount++;
             }
@@ -115,14 +114,14 @@ int getSolCount(matroid M){
         return solCount;
     }
     if(M.fun =="true"){
-        for(int i = 0; i < M.size; i++){
+        for(int i = 0; i < MATROID_NUM_ARR_SIZE; i++){
             if(M.arrNum[i] == 1){
                 solCount++;
             }
         }
         return solCount;
     }if(M.fun =="false"){
-        for(int i = 0; i < M.size; i++){
+        for(int i = 0; i < MATROID_NUM_ARR_SIZE; i++){
             if(M.arrNum[i] == 0){
                 solCount++;
             }
@@ -130,7 +129,7 @@ int getSolCount(matroid M){
         return solCount;
     }
     if(M.fun == "palindrome"){
-        for(int i = 0; i < M.size; i++){
+        for(int i = 0; i < STRING_SIZE_MAX; i++){
             if(isPalindrome(M.arrStr[i])){
                 solCount++;
             }
@@ -141,7 +140,7 @@ int getSolCount(matroid M){
 void evaluateMatroid(matroid M){
     solCount = 0;
     if(M.fun == "even"){
-        for(int i = 0; i < M.size; i++){
+        for(int i = 0; i < MATROID_NUM_ARR_SIZE; i++){
             if(isEven(M.arrNum[i])){
                 M.solNum[solCount] = M.arrNum[i];
                 solCount++;
@@ -150,7 +149,7 @@ void evaluateMatroid(matroid M){
         return;
     }
     if(M.fun == "odd"){
-        for(int i = 0; i < M.size; i++){
+        for(int i = 0; i < MATROID_NUM_ARR_SIZE; i++){
             if(!isEven(M.arrNum[i])){
                 M.solNum[solCount] = M.arrNum[i];
                 solCount++;
@@ -159,7 +158,7 @@ void evaluateMatroid(matroid M){
         return;
     }
     if(M.fun =="true"){
-        for(int i = 0; i < M.size; i++){
+        for(int i = 0; i < MATROID_NUM_ARR_SIZE; i++){
             if(M.arrNum[i] == 1){
                 M.solNum[solCount] = M.arrNum[i];
                 solCount++;
@@ -167,7 +166,7 @@ void evaluateMatroid(matroid M){
         }
         return;
     }if(M.fun =="false"){
-        for(int i = 0; i < M.size; i++){
+        for(int i = 0; i < MATROID_NUM_ARR_SIZE; i++){
             if(M.arrNum[i] == 0){
                 M.solNum[solCount] = M.arrNum[i];
                 solCount++;
@@ -176,7 +175,7 @@ void evaluateMatroid(matroid M){
         return;
     }
     if(M.fun == "palindrome"){
-        for(int i = 0; i < M.size; i++){
+        for(int i = 0; i < STRING_SIZE_MAX; i++){
             if(isPalindrome(M.arrStr[i])){
                 M.solStr[solCount] = M.arrStr[i];
                 solCount++;
@@ -200,8 +199,14 @@ void evaluateMatroidArray(matroid *matroids, int size, char type){
         printf("\n");
         for(int i = 0; i < size; i++){
             printf("Matroid %d:\n",i+1);
-            printMatroid(matroids[i]);
-            printMatroidSolutions(matroids[i]);
+            if(matroids[i].fun == "palindrome"){
+                printMatroid(matroids[i],'s');
+                printMatroidSolutions(matroids[i],'s');
+            }
+            else{
+                printMatroid(matroids[i],'d');
+                printMatroidSolutions(matroids[i],'d');
+            }
         }
     }
     else{
@@ -215,8 +220,14 @@ void evaluateMatroidArray(matroid *matroids, int size, char type){
             printf("\n");
             for(int i = 0; i < size; i++){
                 printf("Matroid %d:\n",i+1);
-                printMatroid(matroids[i]);
-                printMatroidSolutions(matroids[i]);
+                if(matroids[i].fun == "palindrome"){
+                    printMatroid(matroids[i],'s');
+                    printMatroidSolutions(matroids[i],'s');
+                }
+                else{
+                    printMatroid(matroids[i],'d');
+                    printMatroidSolutions(matroids[i],'d');
+                }
             }
             int counter = 0;
             int intersections;
@@ -266,16 +277,12 @@ int main(){
     //MATROID 1 ENTEROS
     matroidsA[0].arrNum = malloc(MATROID_NUM_ARR_SIZE*sizeof(int));
     matroidsA[0].solNum = malloc(MATROID_NUM_ARR_SIZE*sizeof(int));
-    matroidsA[0].size = MATROID_NUM_ARR_SIZE;
-    matroidsA[0].type = 0;
     matroidsA[0].fun = "even";
     initNumMatroid(&matroidsA[0]);
 
     //MATROID 2 BOOLEANOS
     matroidsA[1].arrNum = malloc(MATROID_NUM_ARR_SIZE*sizeof(int));
     matroidsA[1].solNum = malloc(MATROID_NUM_ARR_SIZE*sizeof(int));
-    matroidsA[1].size = MATROID_NUM_ARR_SIZE;
-    matroidsA[1].type = 0;
     matroidsA[1].fun = "true";
     srand(time(NULL));
     for(int i = 0; i < MATROID_NUM_ARR_SIZE; i++){
@@ -283,13 +290,11 @@ int main(){
     }
 
     //MATROID 2 STRINGS
-    matroidsA[2].arrStr = malloc(10 * sizeof(char*));
-    matroidsA[2].solStr = malloc(10 * sizeof(char*));
-    matroidsA[2].size = 10;
-    matroidsA[2].type = 1;
+    matroidsA[2].arrStr = malloc(STRING_SIZE_MAX * sizeof(char*));
+    matroidsA[2].solStr = malloc(STRING_SIZE_MAX * sizeof(char*));
     matroidsA[2].fun = "palindrome";
     srand(time(NULL));
-    for(int i = 0; i < 10; i++){
+    for(int i = 0; i < STRING_SIZE_MAX; i++){
         matroidsA[2].arrStr[i] = malloc((STRING_SIZE_MAX + 1) * sizeof(char));
         matroidsA[2].solStr[i] = malloc((STRING_SIZE_MAX + 1) * sizeof(char));
     }
@@ -300,8 +305,6 @@ int main(){
     for(int i = 0; i <= MATROIDB_ARR_SIZE; i++){
         matroidsB[i].arrNum = malloc(MATROID_NUM_ARR_SIZE*sizeof(int));
         matroidsB[i].solNum = malloc(MATROID_NUM_ARR_SIZE*sizeof(int));
-        matroidsB[i].size = MATROID_NUM_ARR_SIZE;
-        matroidsB[i].type = 0;
         matroidsB[i].fun = "odd";
         initNumMatroid(&matroidsB[i]);
     }
